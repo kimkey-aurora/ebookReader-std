@@ -4,13 +4,10 @@
 #include "sdio/sdio_sdcard.h"
 #include "test_sdio.h"
 
+#include "debug_flag.h"
+
 void test_sdio_init(void)
-{
-	delay_init();	    	 							//延时函数初始化
-	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);		//设置中断优先级分组为组2：2位抢占优先级，2位响应优先级
-	uart_init(115200);	 		//串口初始化为115200
- 	LED_Init();					//初始化与LED连接的硬件接口
-	
+{	
 	while(SD_Init())			//若检测不到SD卡
 	{
 		printf("SD Card Error!\r\n");
@@ -23,12 +20,19 @@ void test_sdio_init(void)
 	printf("\r\n\r\nGet SD card success!\r\n\r\n");
 	printf("\r\nThe information of your SD card are as follows:\r\n\r\n");
 	show_sdcard_info();	//打印SD卡相关信息
-	while(1)
-	{
-		delay_ms(500);
-		LED0=!LED0;		//DS0闪烁
-	}
+	
+	printf("\r\nLOOP_ONLY_IN_MAIN_FUNCTION: %d\r\n", LOOP_ONLY_IN_MAIN_FUNCTION);
+	
+	#if !LOOP_ONLY_IN_MAIN_FUNCTION
+		while(1)
+		{
+			delay_ms(500);
+			LED0=!LED0;		//DS0闪烁
+			printf("Loop in test_sdio_init()\r\n");
+		}
+	#endif
 }
+
 
 //通过串口打印SD卡相关信息
 void show_sdcard_info(void)
